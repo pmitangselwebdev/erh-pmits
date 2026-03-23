@@ -1,0 +1,265 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+enum SystemRole {
+  ADMIN
+  KOORDINATOR_POSKO
+  PETUGAS
+}
+
+enum OfficerType {
+  PETUGAS_POSKO
+  PETUGAS_ASSESSMENT
+  PETUGAS_AMBULANCE
+}
+
+enum ShiftType {
+  SIANG
+  MALAM
+}
+
+enum IncidentStatus {
+  REPORTED
+  ON_PROCESS
+  HANDLED
+  CLOSED
+}
+
+enum TriageLevel {
+  HIJAU
+  KUNING
+  MERAH
+  HITAM
+}
+
+enum AmbulanceUnitStatus {
+  STANDBY
+  BERTUGAS
+  MAINTENANCE
+}
+
+enum AmbulanceRequestStatus {
+  MENUNGGU
+  DALAM_PERJALANAN
+  PASIEN_DIANGKUT
+  SELESAI
+}
+
+enum HandoverStatus {
+  DRAFT
+  SUBMITTED
+  CONFIRMED
+}
+
+enum LogAction {
+  CREATE
+  UPDATE
+  DELETE
+  STATUS_CHANGE
+  LOGIN
+  APPROVE
+  REJECT
+}
+
+model User {
+  id           String      @id @default(cuid())
+  clerkUserId  String      @unique
+  email        String      @unique
+  fullName     String
+  phoneNumber  String?
+  role         SystemRole  @default(PETUGAS)
+  officerType  OfficerType?
+  status       UserStatus  @default(PENDING)
+  joinedAt     DateTime?
+  isActive     Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  shifts       ShiftAssignment[]
+  incidents    Incident[]
+  injuryCards  InjuryCard[]
+  auditLogs    AuditLog[]
+  notifications Notification[]
+}
+
+model ShiftAssignment {
+  id          String     @id @default(cuid())
+  date        DateTime
+  shiftType   ShiftType
+  userId      String
+  officerType OfficerType
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([date, shiftType])
+}
+
+model Incident {
+  id               String         @id @default(cuid())
+  incidentCode     String         @unique
+  reportedAt       DateTime
+  sourceReport     String
+  reporterName     String?
+  reporterPhone    String?
+  incidentType     String
+  locationAddress  String
+  district         String
+  latitude         Float?
+  longitude        Float?
+  description      String?
+  initialVictims   Int            @default(0)
+  status           IncidentStatus @default(REPORTED)
+  assignedOfficerId String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  assignedOfficer  User?          @relation(fields: [assignedOfficerId], references: [id], onDelete: SetNull)
+  injuryCards      InjuryCard[]
+  ambulanceRequests AmbulanceRequest[]
+
+  @@index([reportedAt])
+  @@index([district])
+  @@index([status])
+}
+
+model AmbulanceUnit {
+  id               String              @id @default(cuid())
+  unitCode         String              @unique
+  plateNumber      String              @unique
+  vehicleName      String
+  status           AmbulanceUnitStatus @default(STANDBY)
+  conditionNote    String?
+  lastServiceAt    DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  requests         AmbulanceRequest[]
+}
+
+model AmbulanceRequest {
+  id                String                 @id @default(cuid())
+  requestCode       String                 @unique
+  patientName       String
+  patientAge        Int?
+  patientGender     String?
+  patientCondition  String?
+  pickupAddress     String
+  pickupDistrict    String
+  pickupLatitude    Float?
+  pickupLongitude   Float?
+  destinationType   String
+  destinationName   String
+  priority          String
+  status            AmbulanceRequestStatus @default(MENUNGGU)
+  unitId            String?
+  incidentId        String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  unit              AmbulanceUnit?         @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  incident          Incident?              @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model InjuryCard {
+  id                 String      @id @default(cuid())
+  cardNumber         String      @unique
+  victimName         String
+  gender             String?
+  age                Int?
+  address            String?
+  phoneNumber        String?
+  nationalIdNumber   String?
+  consciousness      String?
+  injuryType         String?
+  injuryLocation     String?
+  triageLevel        TriageLevel
+  firstAidAction     String?
+  medicineGiven      String?
+  toolsUsed          String?
+  referralRequired   Boolean     @default(false)
+  referralHospital   String?
+  ambulanceUsed      Boolean     @default(false)
+  referralAt         DateTime?
+  notes              String?
+  incidentId         String?
+  officerId          String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  incident           Incident?   @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+  officer            User?       @relation(fields: [officerId], references: [id], onDelete: SetNull)
+
+  @@index([triageLevel])
+  @@index([createdAt])
+}
+
+model HandoverShift {
+  id                 String         @id @default(cuid())
+  handoverDate       DateTime
+  previousShift      ShiftType
+  nextShift          ShiftType
+  previousOfficerIds String[]
+  nextOfficerIds     String[]
+  activeIncidentIds  String[]
+  notes              String?
+  constraints        String?
+  requiredNeeds      String?
+  status             HandoverStatus @default(DRAFT)
+  confirmedAt        DateTime?
+  createdById        String
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  message     String
+  category    String
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  userId      String?
+  userName    String?
+  action      LogAction
+  module      String
+  details     String
+  ipAddress   String?
+  createdAt   DateTime  @default(now())
+
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([module])
+  @@index([createdAt])
+}
