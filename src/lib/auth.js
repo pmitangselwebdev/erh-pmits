@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { unstable_rethrow } from "next/navigation";
 import { db } from "@/lib/db";
 import { SYSTEM_ROLES, USER_STATUS } from "@/lib/constants";
 
@@ -98,6 +99,7 @@ export async function syncCurrentUserFromClerk() {
 
     return systemUser;
   } catch (error) {
+    unstable_rethrow(error);
     console.error("Error syncing user from Clerk:", error);
     // Return null instead of throwing to prevent app crash
     return null;

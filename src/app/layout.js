@@ -16,6 +16,8 @@ const geistMono = Geist_Mono({
   preload: false,
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "SIM Posko PMI Tangsel",
   description: "Sistem Informasi Posko Siaga 24 Jam PMI Kota Tangerang Selatan",
