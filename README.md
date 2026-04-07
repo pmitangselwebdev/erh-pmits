@@ -2,15 +2,20 @@
 
 Sistem Informasi Posko Siaga 24 Jam untuk PMI Kota Tangerang Selatan.
 
-## Baseline Sprint 1
+## Status Implementasi Saat Ini
 
-Fase awal implementasi menyiapkan:
+Fitur yang sudah aktif:
 
-- Next.js App Router dengan JavaScript
-- Tailwind CSS
-- Clerk untuk autentikasi
-- Prisma ORM dengan PostgreSQL
-- Struktur domain untuk pengembangan modul operasional
+- Autentikasi Clerk + proteksi route middleware
+- Sinkronisasi user Clerk ke tabel user internal
+- Dashboard KPI real-time berbasis data operasional
+- Operasional Posko: CRUD Kejadian + update status + detail + edit/hapus dengan guard role
+- Operasional Ambulance: permintaan ambulance, assignment unit, update status, sinkron status unit dan kejadian
+- Operasional Assessment: input kartu luka/assessment + update triage
+- Manajemen SDM: approval user, penjadwalan shift, serah terima shift
+- Data Master: manajemen unit ambulance
+- Pengaturan: profil akun, inbox notifikasi, audit log
+- Laporan: filter + export CSV dan PDF
 
 ## Menjalankan Lokal
 
@@ -65,8 +70,11 @@ npm run dev
 - Zod
 - Leaflet
 - UploadThing
+- pdf-lib
 
 ## Catatan
 
 - Kartu Luka (KOMPAK) berada di modul Petugas Ambulance.
-- Full scope modul akan diaktifkan bertahap sesuai roadmap implementasi.
+- Implementasi berjalan bertahap per modul dengan validasi lint/build di tiap batch.
+- Untuk bootstrap admin pertama, isi `BOOTSTRAP_ADMIN_CLERK_USER_ID` di `.env`.
+# emergency-response-hub-pmits
