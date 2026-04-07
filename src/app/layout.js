@@ -1,5 +1,8 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
+import { cookies } from "next/headers";
+import AppShell from "@/components/app-shell";
+import { getCurrentSessionProfile } from "@/lib/auth";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -10,6 +13,7 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata = {
@@ -17,14 +21,29 @@ export const metadata = {
   description: "Sistem Informasi Posko Siaga 24 Jam PMI Kota Tangerang Selatan",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const profile = await getCurrentSessionProfile();
+  const cookieStore = await cookies();
+  const theme = cookieStore.get("theme")?.value;
+  const bodyThemeClass = theme === "dark" ? " dark" : "";
+
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-in"
+      afterSignInUrl="/auth/callback"
+      afterSignUpUrl="/auth/callback"
+    >
       <html
         lang="id"
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col">{children}</body>
+        <body
+          suppressHydrationWarning
+          className={`min-h-full${bodyThemeClass}`}
+        >
+          <AppShell userRole={profile?.role ?? null}>{children}</AppShell>
+        </body>
       </html>
     </ClerkProvider>
   );

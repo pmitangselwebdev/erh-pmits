@@ -4,8 +4,8 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
@@ -28,6 +28,15 @@ enum OfficerType {
   PETUGAS_POSKO
   PETUGAS_ASSESSMENT
   PETUGAS_AMBULANCE
+}
+
+enum Specialization {
+  DOKTER
+  PERAWAT
+  PARAMEDIK
+  LOGISTIK
+  DRIVER_AMBULANCE
+  PUSDATIN
 }
 
 enum ShiftType {
@@ -55,6 +64,12 @@ enum AmbulanceUnitStatus {
   MAINTENANCE
 }
 
+enum MotorUnitStatus {
+  STANDBY
+  BERTUGAS
+  MAINTENANCE
+}
+
 enum AmbulanceRequestStatus {
   MENUNGGU
   DALAM_PERJALANAN
@@ -62,10 +77,62 @@ enum AmbulanceRequestStatus {
   SELESAI
 }
 
+enum AmbulanceCrewRole {
+  DRIVER
+  PARAMEDIK
+}
+
+enum ReportApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum HandoverStatus {
   DRAFT
   SUBMITTED
   CONFIRMED
+}
+
+enum PoskoReportType {
+  HARIAN
+  SITUASI
+}
+
+enum PoskoReportStatus {
+  DRAFT
+  SUBMITTED
+}
+
+enum MedicalEventStatus {
+  INITIATED
+  PREPARATION
+  READY
+  ONGOING
+  COMPLETED
+  CLOSED
+}
+
+enum MedicalEventPostType {
+  WATER_STATION
+  MEDICAL_TENT
+  MOBILE_POINT
+}
+
+enum MedicalStaffRole {
+  DOKTER
+  PARAMEDIS
+  PERAWAT
+}
+
+enum MedicalDutyMode {
+  STATIS
+  DINAMIS
+}
+
+enum MedicalFleetType {
+  AMBULANCE
+  MOTOR
 }
 
 enum LogAction {
@@ -79,24 +146,42 @@ enum LogAction {
 }
 
 model User {
-  id           String      @id @default(cuid())
-  clerkUserId  String      @unique
-  email        String      @unique
-  fullName     String
-  phoneNumber  String?
-  role         SystemRole  @default(PETUGAS)
-  officerType  OfficerType?
-  status       UserStatus  @default(PENDING)
-  joinedAt     DateTime?
-  isActive     Boolean     @default(false)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id              String          @id @default(cuid())
+  clerkUserId     String          @unique
+  email           String          @unique
+  fullName        String
+  phoneNumber     String?
+  address         String?
+  bloodType       String?
+  gender          String?
+  profilePicture  String?
+  specialization  Specialization?
+  role            SystemRole      @default(PETUGAS)
+  officerType     OfficerType?
+  status          UserStatus      @default(PENDING)
+  joinedAt        DateTime?
+  isActive        Boolean         @default(false)
+  lastLatitude    Float?
+  lastLongitude   Float?
+  lastLocationAt  DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  shifts       ShiftAssignment[]
-  incidents    Incident[]
-  injuryCards  InjuryCard[]
-  auditLogs    AuditLog[]
-  notifications Notification[]
+  shifts                    ShiftAssignment[]
+  assignedIncidents         Incident[]         @relation("IncidentAssignee")
+  approvedIncidents         Incident[]         @relation("IncidentApprover")
+  injuryCards               InjuryCard[]
+  approvedAmbulanceRequests AmbulanceRequest[] @relation("AmbulanceRequestApprover")
+  assignedAmbulanceRequests AmbulanceRequest[] @relation("AmbulanceRequestAssignee")
+  ambulanceCrewAssignments  AmbulanceRequestResponder[]
+  auditLogs                 AuditLog[]
+  notifications             Notification[]
+  sentMessages              ChatMessage[]      @relation("SentMessages")
+  receivedMessages          ChatMessage[]      @relation("ReceivedMessages")
+  createdPoskoReports       PoskoReport[]      @relation("PoskoReportCreator")
+  createdMedicalEvents      MedicalEvent[]     @relation("MedicalEventCreator")
+  medicalEventTeams         MedicalEventPostTeamAssignment[]
+  medicalEventInjuryCards   MedicalEventInjuryCard[]
 }
 
 model ShiftAssignment {
@@ -128,17 +213,24 @@ model Incident {
   description      String?
   initialVictims   Int            @default(0)
   status           IncidentStatus @default(REPORTED)
+  isPublicReport   Boolean        @default(false)
+  approvalStatus   ReportApprovalStatus @default(APPROVED)
+  approvedById     String?
+  approvedAt       DateTime?
+  approvalNote     String?
   assignedOfficerId String?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  assignedOfficer  User?          @relation(fields: [assignedOfficerId], references: [id], onDelete: SetNull)
+  assignedOfficer  User?          @relation("IncidentAssignee", fields: [assignedOfficerId], references: [id], onDelete: SetNull)
+  approvedBy       User?          @relation("IncidentApprover", fields: [approvedById], references: [id], onDelete: SetNull)
   injuryCards      InjuryCard[]
   ambulanceRequests AmbulanceRequest[]
 
   @@index([reportedAt])
   @@index([district])
   @@index([status])
+  @@index([approvalStatus])
 }
 
 model AmbulanceUnit {
@@ -149,10 +241,182 @@ model AmbulanceUnit {
   status           AmbulanceUnitStatus @default(STANDBY)
   conditionNote    String?
   lastServiceAt    DateTime?
+  lastLatitude     Float?
+  lastLongitude    Float?
+  lastLocationAt   DateTime?
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
 
   requests         AmbulanceRequest[]
+  medicalEventFleetAssignments MedicalEventPostFleetAssignment[]
+}
+
+model MotorUnit {
+  id             String          @id @default(cuid())
+  unitCode       String          @unique
+  plateNumber    String          @unique
+  vehicleName    String
+  status         MotorUnitStatus @default(STANDBY)
+  conditionNote  String?
+  lastServiceAt  DateTime?
+  lastLatitude   Float?
+  lastLongitude  Float?
+  lastLocationAt DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  medicalEventFleetAssignments MedicalEventPostFleetAssignment[]
+}
+
+model MedicalEvent {
+  id                String             @id @default(cuid())
+  eventCode         String             @unique
+  eventName         String
+  eventType         String
+  eventTypeOther    String?
+  runningCategories String[]           @default([])
+  organizerName     String?
+  startAt           DateTime
+  endAt             DateTime
+  district          String
+  locationAddress   String
+  participantTarget Int?
+  requiredDoctors   Int                @default(0)
+  requiredParamedics Int               @default(0)
+  requiredNurses    Int                @default(0)
+  requiredOtherOfficers Int            @default(0)
+  requiredAmbulances Int               @default(0)
+  requiredMotors    Int                @default(0)
+  status            MedicalEventStatus @default(INITIATED)
+  approvedAt        DateTime?
+  closedAt          DateTime?
+  createdById       String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  createdBy         User               @relation("MedicalEventCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  posts             MedicalEventPost[]
+  injuryCards       MedicalEventInjuryCard[]
+
+  @@index([status, startAt])
+  @@index([district])
+}
+
+model MedicalEventPost {
+  id                    String                @id @default(cuid())
+  eventId               String
+  postName              String
+  postType              MedicalEventPostType
+  kmPoint               String?
+  locationAddress       String
+  latitude              Float?
+  longitude             Float?
+  requiredDoctors       Int                   @default(0)
+  requiredParamedics    Int                   @default(0)
+  requiredNurses        Int                   @default(0)
+  requiredAmbulances    Int                   @default(0)
+  requiredMotors        Int                   @default(0)
+  requiredLogisticKinds Int                   @default(0)
+  isReady               Boolean               @default(false)
+  readinessNote         String?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  event                 MedicalEvent          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  teamAssignments       MedicalEventPostTeamAssignment[]
+  fleetAssignments      MedicalEventPostFleetAssignment[]
+  logisticPlans         MedicalEventPostLogisticPlan[]
+  injuryCards           MedicalEventInjuryCard[]
+
+  @@index([eventId, postType])
+}
+
+model MedicalEventPostTeamAssignment {
+  id               String          @id @default(cuid())
+  eventPostId      String
+  userId           String
+  staffRole        MedicalStaffRole
+  dutyMode         MedicalDutyMode @default(STATIS)
+  isAmbulanceCrew  Boolean         @default(false)
+  isMotorMobile    Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  eventPost        MedicalEventPost @relation(fields: [eventPostId], references: [id], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([eventPostId, userId, staffRole])
+  @@index([userId])
+}
+
+model MedicalEventPostFleetAssignment {
+  id              String          @id @default(cuid())
+  eventPostId     String
+  fleetType       MedicalFleetType
+  ambulanceUnitId String?
+  motorUnitId     String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  eventPost       MedicalEventPost @relation(fields: [eventPostId], references: [id], onDelete: Cascade)
+  ambulanceUnit   AmbulanceUnit?   @relation(fields: [ambulanceUnitId], references: [id], onDelete: SetNull)
+  motorUnit       MotorUnit?       @relation(fields: [motorUnitId], references: [id], onDelete: SetNull)
+
+  @@index([eventPostId, fleetType])
+}
+
+model MedicalEventPostLogisticPlan {
+  id            String          @id @default(cuid())
+  eventPostId   String
+  logisticItemId String?
+  itemName      String
+  requiredQty   Int             @default(0)
+  preparedQty   Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  eventPost     MedicalEventPost @relation(fields: [eventPostId], references: [id], onDelete: Cascade)
+  logisticItem  LogisticItem?    @relation(fields: [logisticItemId], references: [id], onDelete: SetNull)
+
+  @@index([eventPostId])
+}
+
+model MedicalEventInjuryCard {
+  id               String      @id @default(cuid())
+  cardNumber       String      @unique
+  eventId          String
+  postId           String?
+  bibNumber        String?
+  victimName       String
+  gender           String?
+  age              Int?
+  triageLevel      TriageLevel
+  injuryType       String?
+  consciousness    String?
+  chiefComplaints  String[]    @default([])
+  quickActions     String[]    @default([])
+  otherFindings    String[]    @default([])
+  kompakObat       String?
+  kompakMakanMinum String?
+  kompakPenyakit   String?
+  kompakAlergi     String?
+  kompakKejadian   String?
+  firstAidAction   String?
+  referralRequired Boolean     @default(false)
+  referralHospital String?
+  locationAddress  String?
+  latitude         Float?
+  longitude        Float?
+  notes            String?
+  officerId        String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  event            MedicalEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  post             MedicalEventPost? @relation(fields: [postId], references: [id], onDelete: SetNull)
+  officer          User?       @relation(fields: [officerId], references: [id], onDelete: SetNull)
+
+  @@index([eventId, triageLevel])
 }
 
 model AmbulanceRequest {
@@ -170,16 +434,44 @@ model AmbulanceRequest {
   destinationName   String
   priority          String
   status            AmbulanceRequestStatus @default(MENUNGGU)
+  isPublicRequest   Boolean                @default(false)
+  approvalStatus    ReportApprovalStatus   @default(APPROVED)
+  approvedById      String?
+  approvedAt        DateTime?
+  approvalNote      String?
+  assignedResponderId String?
   unitId            String?
   incidentId        String?
+  scheduledAt       DateTime?
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
 
   unit              AmbulanceUnit?         @relation(fields: [unitId], references: [id], onDelete: SetNull)
   incident          Incident?              @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+  approvedBy        User?                  @relation("AmbulanceRequestApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  assignedResponder User?                  @relation("AmbulanceRequestAssignee", fields: [assignedResponderId], references: [id], onDelete: SetNull)
+  responders        AmbulanceRequestResponder[]
 
   @@index([status])
   @@index([createdAt])
+  @@index([approvalStatus])
+  @@index([scheduledAt])
+}
+
+model AmbulanceRequestResponder {
+  id         String            @id @default(cuid())
+  requestId  String
+  userId     String
+  role       AmbulanceCrewRole
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  request    AmbulanceRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, userId])
+  @@index([requestId, role])
+  @@index([userId])
 }
 
 model InjuryCard {
@@ -205,6 +497,28 @@ model InjuryCard {
   notes              String?
   incidentId         String?
   officerId          String?
+
+  // New assessment fields
+  jenisKejadian      String?
+  waktuKejadian      String?
+  lokasi             String?
+  namaPetugas        String?
+  respon             String?
+  nafas              String?
+  frekuensiNafas     String?
+  nadi               String?
+  frekuensiNadi      String?
+  tekananDarah       String?
+  keluhan            String?
+  obat               String?
+  makanMinum         String?
+  penyakit           String?
+  alergi             String?
+  kejadian           String?
+  penjelasanTindakan String?
+  statusRujukan      String?
+  lokasiRujukan      String?
+
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 
@@ -233,6 +547,35 @@ model HandoverShift {
   updatedAt          DateTime       @updatedAt
 }
 
+model PoskoReport {
+  id                 String            @id @default(cuid())
+  reportCode         String            @unique
+  reportType         PoskoReportType
+  status             PoskoReportStatus @default(DRAFT)
+  reportDate         DateTime
+  title              String
+  district           String
+  locationAddress    String?
+  weatherCondition   String?
+  operationalSummary String?
+  situationOverview  String?
+  resourceNeeds      String?
+  recommendation     String?
+  incidentIds        String[]
+  requestIds         String[]
+  payloadSnapshot    Json?
+  submittedAt        DateTime?
+  createdById        String
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  createdBy          User              @relation("PoskoReportCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([reportType, reportDate])
+  @@index([status])
+  @@index([createdById, createdAt])
+}
+
 model Notification {
   id          String   @id @default(cuid())
   userId      String
@@ -248,6 +591,60 @@ model Notification {
   @@index([userId, isRead])
 }
 
+model ReferralHospital {
+  id               String   @id @default(cuid())
+  name             String
+  address          String
+  district         String
+  phoneNumber      String?
+  emergencyPhone   String?
+  hasEmergencyUnit Boolean  @default(true)
+  hasTraumaCenter  Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([district])
+  @@index([isActive])
+}
+
+model EmergencyContact {
+  id          String   @id @default(cuid())
+  name        String
+  agency      String
+  phoneNumber String
+  backupPhone String?
+  district    String?
+  isActive    Boolean  @default(true)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([agency])
+  @@index([isActive])
+}
+
+model LogisticItem {
+  id            String   @id @default(cuid())
+  itemCode      String   @unique
+  name          String
+  category      String
+  unit          String
+  currentStock  Int      @default(0)
+  minimumStock  Int      @default(0)
+  storageLocation String?
+  isActive      Boolean  @default(true)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  medicalEventPlans MedicalEventPostLogisticPlan[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
 model AuditLog {
   id          String    @id @default(cuid())
   userId      String?
@@ -261,5 +658,22 @@ model AuditLog {
   user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([module])
+  @@index([createdAt])
+}
+
+model ChatMessage {
+  id          String   @id @default(cuid())
+  senderId    String
+  receiverId  String
+  content     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
   @@index([createdAt])
 }

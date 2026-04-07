@@ -1,26 +1,48 @@
-# Baseline Implementasi Sprint 1
+# Ringkasan Implementasi Aktif
 
-Dokumen ini mencatat hasil inisialisasi awal proyek sesuai konsep final SIM Posko PMI.
+Dokumen ini merangkum fitur yang saat ini sudah aktif di SIM Posko PMI.
 
-## Cakupan yang Sudah Selesai
+## Cakupan Aktif
 
-- Inisialisasi Next.js App Router berbasis JavaScript
-- Integrasi awal Clerk (provider, middleware, halaman sign-in/sign-up)
-- Setup Prisma PostgreSQL dan skema domain fondasi
-- Dashboard awal terproteksi autentikasi
-- Struktur route utama untuk Operasional, Manajemen, Data Master, Laporan, Pengaturan
-- Utility dasar untuk konstanta sistem, auth helper, koneksi database, dan validasi Zod
+- Fondasi aplikasi: Next.js App Router (JS), Tailwind, Clerk, Prisma PostgreSQL.
+- Middleware proteksi route untuk area internal modul.
+- Sinkronisasi user Clerk ke tabel user internal + approval user.
+- Dashboard operasional dengan KPI agregasi real-time.
+- Operasional Posko:
+	- Input dan listing kejadian
+	- Detail/edit/hapus kejadian dengan guard role
+	- Update status kejadian
+- Operasional Ambulance:
+	- Input request ambulance terkait kejadian
+	- Assignment unit ambulance
+	- Update status request
+	- Sinkron otomatis status unit dan status kejadian
+- Operasional Assessment:
+	- Input kartu luka/assessment
+	- Listing assessment dan update triage
+- Manajemen SDM:
+	- Approval user
+	- Penjadwalan shift
+	- Serah terima shift (handover) + konfirmasi
+- Data Master:
+	- CRUD dasar unit ambulance + update status operasional
+- Pengaturan:
+	- Profil akun
+	- Inbox notifikasi dan aksi tandai dibaca
+	- Audit log aktivitas
+- Laporan:
+	- Filter periode
+	- Export CSV
+	- Export PDF
 
 ## Catatan Teknis
 
-- Semua route di bawah dashboard, operasional, manajemen, data-master, laporan, dan pengaturan diproteksi middleware Clerk.
-- Skema Prisma pada tahap ini adalah fondasi domain; model detail tambahan akan ditambahkan bertahap per modul.
-- Integrasi peta Leaflet, upload file, notifikasi event, dan export PDF/Excel belum diaktifkan pada sprint ini.
+- Prisma client berjalan menggunakan adapter PostgreSQL (`@prisma/adapter-pg`).
+- Semua mutation penting menulis audit log terpusat.
+- Notifikasi internal sudah diaktifkan untuk approval user, assignment shift, dan handover shift.
 
-## Next Sprint Prioritas
+## Prioritas Lanjutan
 
-1. Approval user dan sinkronisasi profil Clerk ke tabel user internal.
-2. Implementasi CRUD modul Kejadian untuk Petugas Posko.
-3. Implementasi alur Permintaan Ambulance dan status perjalanan.
-4. Implementasi Kartu Luka (KOMPAK) di Petugas Ambulance.
-5. Pembuatan audit logger terpusat untuk semua mutation.
+1. Master data rumah sakit rujukan dan kontak darurat.
+2. Integrasi peta Leaflet pada kejadian/ambulance.
+3. Peningkatan laporan periodik bulanan/tahunan dan grafik tren.
