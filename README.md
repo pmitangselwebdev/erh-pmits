@@ -1,6 +1,6 @@
-# SIM Posko PMI v2
+# Emergency Response Hub PMI Kota Tangerang Selatan
 
-Sistem Informasi Posko Siaga 24 Jam untuk PMI Kota Tangerang Selatan.
+Emergency Response Hub Posko Siaga 24 Jam untuk PMI Kota Tangerang Selatan.
 
 ## Status Implementasi Saat Ini
 
