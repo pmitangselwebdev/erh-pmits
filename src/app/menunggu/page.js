@@ -46,7 +46,7 @@ export default async function MenunggPage() {
   const isRejected = dbUser.status === USER_STATUS.REJECTED;
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-red-50 px-4 py-10">
+    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-red-50 dark:from-slate-900 dark:to-slate-950 px-4 py-10">
       <div className="mx-auto w-full max-w-lg">
         <header className="mb-8 text-center">
           <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold tracking-wide text-red-700">

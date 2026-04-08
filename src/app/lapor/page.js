@@ -140,7 +140,7 @@ export default function LaporPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-red-50 via-white to-red-50 px-4 py-10">
+    <main className="min-h-screen bg-gradient-to-b from-red-50 via-white to-red-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 px-4 py-10">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         <header className="rounded-2xl border border-red-100 bg-white p-6 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-red-700">Masyarakat</p>
