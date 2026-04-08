@@ -1,43 +1,33 @@
 "use client"
 
 import * as React from "react"
+import { useTheme } from "next-themes"
 import { Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function ThemeToggle() {
-  const [theme, setTheme] = React.useState("light")
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
 
-  React.useEffect(() => {
-    if (typeof document === "undefined" || !document.body) return
-    const hasDarkClass = document.body.classList.contains("dark")
-    const preferredTheme = hasDarkClass ? "dark" : "light"
+  React.useEffect(() => setMounted(true), [])
 
-    setTheme(preferredTheme)
-    localStorage.setItem("theme", preferredTheme)
-    document.cookie = `theme=${preferredTheme}; path=/; max-age=31536000; samesite=lax`
-  }, [])
-
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light"
-    setTheme(newTheme)
-    localStorage.setItem("theme", newTheme)
-    document.cookie = `theme=${newTheme}; path=/; max-age=31536000; samesite=lax`
-    if (typeof document !== "undefined" && document.body) {
-      document.body.classList.toggle("dark", newTheme === "dark")
-    }
+  if (!mounted) {
+    return <div className="h-9 w-9" />
   }
+
+  const isDark = theme === "dark"
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={toggleTheme}
-      className="h-9 w-9"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="h-9 w-9 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
     >
-      {theme === "light" ? (
-        <Moon className="h-4 w-4" />
+      {isDark ? (
+        <Sun className="h-4 w-4 transition-transform duration-200 rotate-0 scale-100" />
       ) : (
-        <Sun className="h-4 w-4" />
+        <Moon className="h-4 w-4 transition-transform duration-200 rotate-0 scale-100" />
       )}
       <span className="sr-only">Toggle theme</span>
     </Button>

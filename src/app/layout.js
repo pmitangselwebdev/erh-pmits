@@ -1,7 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
-import { cookies } from "next/headers";
 import AppShell from "@/components/app-shell";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,11 +20,7 @@ export const metadata = {
   description: "Sistem Informasi Posko Siaga 24 Jam PMI Kota Tangerang Selatan",
 };
 
-export default async function RootLayout({ children }) {
-  const cookieStore = await cookies();
-  const theme = cookieStore.get("theme")?.value;
-  const bodyThemeClass = theme === "dark" ? " dark" : "";
-
+export default function RootLayout({ children }) {
   return (
     <ClerkProvider
       signInUrl="/sign-in"
@@ -34,13 +30,13 @@ export default async function RootLayout({ children }) {
     >
       <html
         lang="id"
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <body
-          suppressHydrationWarning
-          className={`min-h-full${bodyThemeClass}`}
-        >
-          <AppShell>{children}</AppShell>
+        <body className="min-h-full">
+          <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+            <AppShell>{children}</AppShell>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

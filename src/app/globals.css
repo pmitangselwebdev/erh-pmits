@@ -35,11 +35,13 @@
   --radius: 0.625rem;
   --sidebar: #111827;
   --sidebar-foreground: #f8fafc;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #e2e8f0;
   --sidebar-primary: #ef4444;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1f2937;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #334155;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: #1e293b;
   --sidebar-ring: #475569;
 }
 
@@ -274,42 +276,9 @@ body {
   --color-red-light: #ef4444;
 }
 
-/* Sidebar specific styling */
-.sidebar-text, .sidebar-header span, .sidebar-header p, .sidebar-header h3 {
-  color: var(--sidebar-foreground) !important;
-}
-
-/* Sidebar menu button active and hover states */
-[data-sidebar="menu-button"],
-.sidebar-menu-button {
-  transition: background-color 0.2s ease, color 0.2s ease !important;
-}
-
-[data-sidebar="menu-button"]:hover,
-.sidebar-menu-button:hover {
-  background-color: var(--color-brand) !important;
-  color: #ffffff !important;
-}
-
-[data-sidebar="menu-button"][data-active="true"],
-.sidebar-menu-button[data-active="true"],
-.sidebar-menu-button.active {
-  background-color: var(--color-brand-strong) !important;
-  color: #ffffff !important;
-}
-
-/* Dark mode sidebar menu button states */
-.dark [data-sidebar="menu-button"]:hover,
-.dark .sidebar-menu-button:hover {
-  background-color: var(--color-brand) !important;
-  color: #ffffff !important;
-}
-
-.dark [data-sidebar="menu-button"][data-active="true"],
-.dark .sidebar-menu-button[data-active="true"],
-.dark .sidebar-menu-button.active {
-  background-color: var(--color-brand-strong) !important;
-  color: #ffffff !important;
+/* ─── Sidebar transitions ─────────────────────────────────────────────────── */
+[data-sidebar="menu-button"] {
+  transition: background-color 0.15s ease, color 0.15s ease !important;
 }
 
 .dashboard-stat-card {
