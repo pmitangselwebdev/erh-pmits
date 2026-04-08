@@ -15,11 +15,20 @@ import {
   SunMoon,
 } from "lucide-react"
 import { useAuth } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import MapInfographicHero from "@/components/map-infographic-hero"
 
 export default function LandingPage() {
   const { isSignedIn } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isSignedIn) {
+      router.push("/dashboard")
+      return
+    }
+  }, [isSignedIn, router])
 
   useEffect(() => {
     const revealNodes = document.querySelectorAll("[data-reveal]")
