@@ -25,7 +25,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (isSignedIn) {
-      router.push("/dashboard")
+      router.push("/auth/callback")
       return
     }
   }, [isSignedIn, router])

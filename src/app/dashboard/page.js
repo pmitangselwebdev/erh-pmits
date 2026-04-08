@@ -41,7 +41,9 @@ export default async function DashboardPage() {
   const profile = await getCurrentSessionProfile();
 
   if (!profile) {
-    redirect("/sign-in");
+    // userId exists (Clerk auth works) but no system profile
+    // → user needs to complete registration
+    redirect("/registrasi");
   }
 
   if (profile.status === USER_STATUS.PENDING) {
