@@ -17,7 +17,7 @@ function redirectWithAlert(message, type = "error") {
 export async function updateProfile(formData) {
   const profile = await getCurrentSessionProfile();
   if (!profile) {
-    redirect("/sign-in");
+    redirect("/auth/callback");
   }
 
   const fullName = String(formData.get("fullName") || "").trim();
@@ -56,7 +56,7 @@ export async function updateProfile(formData) {
 export async function updateProfilePicture(formData) {
   const profile = await getCurrentSessionProfile();
   if (!profile) {
-    redirect("/sign-in");
+    redirect("/auth/callback");
   }
 
   const file = formData.get("profilePicture");

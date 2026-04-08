@@ -22,7 +22,7 @@ const ROLE_LABELS = {
 
 export default async function PengaturanPage({ searchParams }) {
   const profile = await getCurrentSessionProfile();
-  if (!profile) redirect("/sign-in");
+  if (!profile) redirect("/auth/callback");
 
   const resolvedParams = await searchParams;
   const alert = String(resolvedParams?.alert || "").trim();
@@ -45,7 +45,7 @@ export default async function PengaturanPage({ searchParams }) {
     },
   });
 
-  if (!userData) redirect("/sign-in");
+  if (!userData) redirect("/auth/callback");
 
   // Get notifications and audit logs
   const [recentAuditLogs, notifications, unreadCount] = await Promise.all([

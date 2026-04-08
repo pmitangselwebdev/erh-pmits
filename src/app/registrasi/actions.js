@@ -17,7 +17,7 @@ function redirectWithAlert(message) {
 export async function registerProfile(formData) {
   const profile = await getCurrentSessionProfile();
   if (!profile) {
-    redirect("/sign-in");
+    redirect("/auth/callback");
   }
 
   const fullName = String(formData.get("fullName") || "").trim();

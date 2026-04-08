@@ -36,7 +36,7 @@ export default async function RegistrasiPage({ searchParams }) {
     },
   });
 
-  if (!dbUser) redirect("/sign-in");
+  if (!dbUser) redirect("/auth/callback");
 
   if (dbUser.status === USER_STATUS.ACTIVE) {
     redirect("/dashboard");
