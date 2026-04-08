@@ -24,8 +24,13 @@ export default function AuthCallbackPage() {
         const response = await fetch("/api/auth/status");
         const data = await response.json();
 
+        if (response.status === 401) {
+          router.push("/sign-in");
+          return;
+        }
+
         if (!data.success) {
-          setError("Tidak dapat terhubung ke sistem. Pastikan koneksi internet Anda stabil lalu coba lagi, atau hubungi administrator.");
+          setError(data.message || "Tidak dapat terhubung ke sistem. Pastikan koneksi internet Anda stabil lalu coba lagi, atau hubungi administrator.");
           return;
         }
 
