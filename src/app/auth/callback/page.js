@@ -26,10 +26,10 @@ export default function AuthCallbackPage() {
         const data = await response.json();
 
         if (!data.success) {
-          // User is signed in at Clerk level but DB profile unavailable
-          // Could be: DB connection down, or brand new user not in DB yet
-          // Redirect to registrasi to create/complete the profile
-          router.push("/registrasi");
+          // status 401: DB unavailable or user has no DB record yet
+          // Show error UI — do NOT route anywhere (routing causes a loop
+          // because server pages redirect back to /sign-in which comes back here)
+          setError("Tidak dapat terhubung ke sistem. Pastikan koneksi internet Anda stabil lalu coba lagi, atau hubungi administrator.");
           return;
         }
 

@@ -19,7 +19,7 @@ const ROLE_LABELS = {
 
 export default async function MenunggPage() {
   const profile = await getCurrentSessionProfile();
-  if (!profile) redirect("/sign-in");
+  if (!profile) redirect("/auth/callback");
 
   const dbUser = await db.user.findUnique({
     where: { id: profile.id },
