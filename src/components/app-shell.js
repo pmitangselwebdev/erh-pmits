@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import NotificationBar from "@/components/notification-bar";
 import ChatWidget from "@/components/chat-widget";
@@ -79,25 +78,25 @@ function isLinkActive(pathname, href) {
 export default function AppShell({ children }) {
   const pathname = usePathname();
   const shouldUseShell = isInternalAppRoute(pathname);
-  const { user } = useUser();
-  const userRole = user?.publicMetadata?.role ?? null;
   const [profilePicture, setProfilePicture] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     if (!shouldUseShell) return;
 
-    async function fetchProfilePicture() {
+    async function fetchUserInfo() {
       try {
         const response = await fetch("/api/user/profile-picture");
         if (response.ok) {
           const data = await response.json();
           setProfilePicture(data.profilePicture);
+          setUserRole(data.role);
         }
       } catch (error) {
-        console.error("Error fetching profile picture:", error);
+        console.error("Error fetching user info:", error);
       }
     }
-    fetchProfilePicture();
+    fetchUserInfo();
   }, [shouldUseShell]);
 
   if (!shouldUseShell) {

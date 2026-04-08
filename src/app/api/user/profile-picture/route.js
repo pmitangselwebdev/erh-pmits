@@ -11,10 +11,13 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { id: profile.id },
-      select: { profilePicture: true },
+      select: { profilePicture: true, role: true },
     });
 
-    return NextResponse.json({ profilePicture: user?.profilePicture || null });
+    return NextResponse.json({
+      profilePicture: user?.profilePicture || null,
+      role: user?.role || null,
+    });
   } catch (error) {
     console.error("Error fetching profile picture:", error);
     return NextResponse.json(
