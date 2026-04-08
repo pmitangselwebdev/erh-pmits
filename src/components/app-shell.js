@@ -123,13 +123,16 @@ export default function AppShell({ children }) {
           </header>
 
           {/* Top notification bar */}
-          <div className="relative z-40 overflow-visible border-b border-slate-200 bg-white dark:bg-card dark:border-slate-700 px-6 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-slate-600 dark:text-slate-300">Sistem aktif • {new Date().toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
+          <div className="relative z-40 overflow-visible border-b border-slate-200 bg-white dark:bg-card dark:border-slate-700 px-3 sm:px-6 py-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2 h-2 flex-shrink-0 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-slate-600 dark:text-slate-300 truncate">
+                  <span className="hidden sm:inline">Sistem aktif • {new Date().toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
+                  <span className="sm:hidden">Sistem aktif</span>
+                </span>
               </div>
-              <div className="relative z-50 flex items-center gap-2 overflow-visible">
+              <div className="relative z-50 flex flex-shrink-0 items-center gap-1 sm:gap-2 overflow-visible">
                 <ThemeToggle />
                 <ChatWidget />
                 <NotificationBar />
@@ -138,7 +141,7 @@ export default function AppShell({ children }) {
           </div>
           
           {/* Page content */}
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="flex flex-1 flex-col gap-4 p-3 sm:p-4 pt-0">
             {children}
           </div>
         </main>

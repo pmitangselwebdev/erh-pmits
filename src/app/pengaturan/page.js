@@ -289,7 +289,7 @@ export default async function PengaturanPage({ searchParams }) {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-max border-collapse text-left text-sm">
+            <table className="w-full min-w-[700px] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500">
                   <th className="px-3 py-2.5 font-semibold">Waktu</th>
@@ -354,7 +354,7 @@ export default async function PengaturanPage({ searchParams }) {
           <p className="text-xs text-slate-500 mb-4">Menampilkan 50 aktivitas terakhir.</p>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-max border-collapse text-left text-sm">
+            <table className="w-full min-w-[700px] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500">
                   <th className="px-3 py-2.5 font-semibold">Waktu</th>
