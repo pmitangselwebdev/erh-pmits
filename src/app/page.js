@@ -20,15 +20,15 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import MapInfographicHero from "@/components/map-infographic-hero"
 
 export default function LandingPage() {
-  const { isSignedIn } = useAuth()
+  const { isSignedIn, isLoaded } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (isSignedIn) {
+    if (isLoaded && isSignedIn) {
       router.push("/auth/callback")
       return
     }
-  }, [isSignedIn, router])
+  }, [isLoaded, isSignedIn, router])
 
   useEffect(() => {
     const revealNodes = document.querySelectorAll("[data-reveal]")
