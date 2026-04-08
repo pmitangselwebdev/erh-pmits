@@ -2,7 +2,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import AppShell from "@/components/app-shell";
-import { getCurrentSessionProfile } from "@/lib/auth";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,15 +15,12 @@ const geistMono = Geist_Mono({
   preload: false,
 });
 
-export const dynamic = "force-dynamic";
-
 export const metadata = {
   title: "SIM Posko PMI Tangsel",
   description: "Sistem Informasi Posko Siaga 24 Jam PMI Kota Tangerang Selatan",
 };
 
 export default async function RootLayout({ children }) {
-  const profile = await getCurrentSessionProfile();
   const cookieStore = await cookies();
   const theme = cookieStore.get("theme")?.value;
   const bodyThemeClass = theme === "dark" ? " dark" : "";
@@ -44,7 +40,7 @@ export default async function RootLayout({ children }) {
           suppressHydrationWarning
           className={`min-h-full${bodyThemeClass}`}
         >
-          <AppShell userRole={profile?.role ?? null}>{children}</AppShell>
+          <AppShell>{children}</AppShell>
         </body>
       </html>
     </ClerkProvider>

@@ -76,10 +76,11 @@ function isLinkActive(pathname, href) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export default function AppShell({ children, userRole }) {
+export default function AppShell({ children }) {
   const pathname = usePathname();
   const shouldUseShell = isInternalAppRoute(pathname);
-  const { user } = useUser(); // Get user info from Clerk
+  const { user } = useUser();
+  const userRole = user?.publicMetadata?.role ?? null;
   const [profilePicture, setProfilePicture] = useState(null);
 
   useEffect(() => {

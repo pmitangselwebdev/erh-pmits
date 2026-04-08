@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { unstable_rethrow } from "next/navigation";
 import { db } from "@/lib/db";
@@ -106,7 +107,7 @@ export async function syncCurrentUserFromClerk() {
   }
 }
 
-export async function getCurrentSessionProfile() {
+export const getCurrentSessionProfile = cache(async function getCurrentSessionProfile() {
   const systemUser = await syncCurrentUserFromClerk();
   if (!systemUser) return null;
 
