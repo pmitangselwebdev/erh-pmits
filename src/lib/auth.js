@@ -141,7 +141,7 @@ export const getCurrentSessionProfile = cache(async function getCurrentSessionPr
     officerType: latestUserData.officerType,
     isActive: latestUserData.isActive,
   };
-}
+});
 
 export async function ensureSignedIn() {
   const { userId } = await auth();
